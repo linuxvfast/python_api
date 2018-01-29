@@ -16,10 +16,16 @@ print('Repositories returned:',len(repo_dicts))
 
 #获取第一个字典的信息
 repo_dict = repo_dicts[0]
-print('\nKeys:',len(repo_dict))
+print('\nSelected information about first repository:')
 #遍历字典的键值
-for key in sorted(repo_dict.keys()):
-    print(key)
+select_dict = {}
+for key,values in sorted(repo_dict.items()):
+    # print(key,values)
+    if key in 'name,stargazers_count,html_url,created_at,updated_at,description':
+        select_dict[key] = values
+print(select_dict)
+print('Owner:',repo_dict['owner']['login'])
+
 
 
 
