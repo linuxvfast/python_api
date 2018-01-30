@@ -1,0 +1,45 @@
+# -*- coding:utf-8 -*-
+import requests,pygal
+from operator import itemgetter
+from pygal.style import LightenStyle as LS,LightColorizedStyle as LCS
+#获取hacker news上所有的ID号
+url = 'https://hacker-news.firebaseio.com/v0/topstories.json'
+r = requests.get(url)
+print('Status Code:',r.status_code)
+#将响应结果ID存储在列表中
+submisson_ids = r.json()
+
+
+#遍历前5个id号，获取id号对应的标题，连接，描述
+submisson_dicts = []
+for submisson_id in submisson_ids[:5]:
+    url = ('https://hacker-news.firebaseio.com/v0/item/' + str(submisson_id) + '.json')
+    submisson_r = requests.get(url)
+    print(submisson_r.status_code)
+    response_dict = submisson_r.json()
+
+    submisson_dict = {
+        'title':response_dict['title'],
+        # 'link':'http://mews.ycombinator.com/item?id=' + str(submisson_id),
+        'link':response_dict['url'],
+        'comments':response_dict.get('descendants',0)
+    }
+    submisson_dicts.append(submisson_dict)
+
+#对submisson_dicts的descendants列进行倒序排列
+submisson_dicts = sorted(submisson_dicts,key=itemgetter('comments'),reverse=True)
+x_name,y_value = [],[]
+for submisson_dict in submisson_dicts:
+    x_name.append(submisson_dict['title'])
+    plot_dict = {
+        'value':submisson_dict['comments'],
+        'xlink':submisson_dict['link'],
+    }
+    y_value.append(plot_dict)
+
+my_style = LS('#333366',base_style=LCS)
+chart = pygal.Bar(style=my_style,x_label_rotation=45,show_legend=False)
+chart.title = 'Api Test Hacker'
+chart.x_labels = x_name
+chart.add('',y_value)
+chart.render_to_file('hacker_sorted.svg')
